@@ -1,4 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { getAuth } from "firebase/auth";
+
 
 const todoSlice = createSlice({
   name: 'todo',
@@ -13,11 +15,15 @@ const todoSlice = createSlice({
       state.tasks.push(action.payload);
     },
     updateTask: (state, action) => {
+      const auth = getAuth();
       const index = state.tasks.findIndex(task => task.id === action.payload.id);
       if (index !== -1) {
+        if(action.payload.ownerId === auth.currentUser.uid) {
         state.tasks[index] = action.payload;
+      } else {
+        state.tasks[index] = state.tasks.find((task) => task.id === action.payload.id);
       }
-    },
+    }},
     deleteTask: (state, action) => {
       state.tasks = state.tasks.filter(task => task.id !== action.payload);
     },

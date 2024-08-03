@@ -33,7 +33,7 @@ const TodoList = ({ onEditTask }) => {
   const user = useSelector((state) => state.auth.user);
   const [filter, setFilter] = useState('all');
   const [showMyTasks, setShowMyTasks] = useState(true);
-  const [sortOrder, setSortOrder] = useState('asc');
+  const [sortOrder, setSortOrder] = useState('All');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [totalTasks, setTotalTasks] = useState(0);
   const [allUsersTasks, setAllUsersTasks] = useState(0);
@@ -52,12 +52,19 @@ const TodoList = ({ onEditTask }) => {
   }, []);
 
   useEffect(() => {
-    // console.log("TodoList useEffect triggered");
     console.log("Current user:", user);
+    console.log("Current user's Id:", user.uid);
 
     if (user && user.uid) {
-      console.log("Fetching tasks for user:", user.uid);
-      const q = query(collection(db, 'tasks'), where('userId', '==', user.uid));
+      let q;
+      if (user && user.uid) {
+        if (showMyTasks) {
+          q = query(collection(db, 'tasks'), where('userId', '==', user.uid));
+        } else {
+          q = query(collection(db, 'tasks'));
+        }
+      }
+
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         // console.log("Snapshot received");
         const tasksData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -74,7 +81,7 @@ const TodoList = ({ onEditTask }) => {
       dispatch(setTasks([]));
       setTotalTasks(0);
     }
-  }, [dispatch, user]);
+  }, [dispatch, user, showMyTasks]);
 
   // console.log("Rendering tasks:", tasks);
 
@@ -133,20 +140,22 @@ const TodoList = ({ onEditTask }) => {
 
   const filteredTasks = tasks
     .filter(task => {
-      if (!showMyTasks || task.userId === user.uid) {
         if (filter === 'all') return true;
         if (filter === 'done') return task.status;
         if (filter === 'notDone') return !task.status;
-      }
       return false;
     })
     .sort((a, b) => {
       if (sortOrder === 'asc') {
         return a.createdAt?.toDate() - b.createdAt?.toDate();
-      } else {
+      } else if (sortOrder === 'desc') {
         return b.createdAt?.toDate() - a.createdAt?.toDate();
+      } else {
+        return false;
       }
     });
+
+    
 
   return (
     <>
@@ -155,16 +164,13 @@ const TodoList = ({ onEditTask }) => {
         <Box bg="red.500" color="white" p={2} mb={4} textAlign="center">
           You are currently offline. Changes will be synced when you&apos;re back online.
         </Box>
-      ) 
-       :
-      (
+      ) : (
         <Box bg="green.500" color="white" p={2} mb={4} textAlign="center">
           Online
         </Box>
-      )
-      }
+      )}
 
-      <HStack spacing={4} mb={4}>
+      <HStack paddingX="1rem" spacing={4} mb={4}>
         <Select
           value={filter} 
           onChange={(e) => setFilter(e.target.value)}
@@ -178,36 +184,24 @@ const TodoList = ({ onEditTask }) => {
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value)}
           width="200px">
+          <option value="all">All</option>
           <option value="asc">Ascending</option>
           <option value="desc">Descending</option>
         </Select>
 
         <FormControl display="flex" alignItems="center">
-          <FormLabel
-            border={showMyTasks ? "3px solid purple" : null}
-            padding="0.25rem"
-            borderRadius="md"
-            position="fixed"
-            right="41vw"
-            htmlFor="show-my-tasks" mb="0">
-            {showMyTasks ? "My Tasks" : null}
-          </FormLabel>
           <Switch
-            position="fixed"
-            right="47.5vw"
             id="show-my-tasks"
             marginX="1rem"
             isChecked={showMyTasks}
             onChange={(e) => setShowMyTasks(e.target.checked)}
           />
           <FormLabel
-            border={!showMyTasks ? "3px solid purple" : null}
+            border= "3px solid purple"
             padding="0.25rem"
             borderRadius="md"
-            position="fixed"
-            right="51vw"
             htmlFor="show-my-tasks" mb="0">
-            {!showMyTasks ? "All Users' Tasks" : null }
+            {showMyTasks ? "My Tasks" : "All Users' Tasks" }
           </FormLabel>
         </FormControl>
 
@@ -227,6 +221,7 @@ const TodoList = ({ onEditTask }) => {
         </Box>
       </HStack>
 
+      <Box paddingX="1rem">
       <DragDropContext onDragEnd={onDragEnd}>
         <StrictModeDroppable droppableId="taskList">
           {(provided) => (
@@ -235,9 +230,9 @@ const TodoList = ({ onEditTask }) => {
               ref={provided.innerRef}
               templateColumns="repeat(auto-fill, minmax(250px, 1fr))"
               gap={4}
-              width="100%"
-            >
-              {filteredTasks.map((task, index) => (
+              width="100%">
+
+               { filteredTasks.map((task, index) => (
                 <Draggable key={task.id} draggableId={task.id} index={index}>
                   {(provided, snapshot) => (
                     <Box
@@ -287,25 +282,32 @@ const TodoList = ({ onEditTask }) => {
                       </Box>
                     </VStack>
                     <HStack justify="space-between" mt="auto" pt={2}>
+                      
+                      {task.userId === user.uid && (
+                      <>
                       <Checkbox
                         isChecked={task.status}
                         onChange={(e) => handleStatusChange(task.id, e.target.checked)}
-                        colorScheme="purple"
-                      >
+                        colorScheme="purple">
                         Done
                       </Checkbox>
+
                       <Button size="md" colorScheme="purple" variant="outline" onClick={() => onEditTask(task)}>Edit</Button>
                       <Button size="md" colorScheme="red" variant="outline" onClick={() => handleDeleteTask(task.id)}>Delete</Button>
+                      </>
+                      )}
                     </HStack>
                     </Box>
                   )}
                 </Draggable>
-              ))}
+              )) }
+                
               {provided.placeholder}
             </Grid>
           )}
         </StrictModeDroppable>
       </DragDropContext>
+      </Box>
     </>
   );
 };

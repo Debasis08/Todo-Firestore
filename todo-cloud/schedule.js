@@ -1,6 +1,6 @@
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
   
-  const taskDeletion = onDocumentUpdated("tasks/WCz4SxzCplzweu5v8XjO",
+  const taskDeletion = onDocumentUpdated("tasks/{taskId}",
     async (event) => {
         const data = event.after.data();
         const queue = getFunctions().taskQueue("backupapod");

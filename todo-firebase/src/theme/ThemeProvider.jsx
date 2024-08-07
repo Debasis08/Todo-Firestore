@@ -1,3 +1,5 @@
+//ThemeProvider.jsx
+
 import { ChakraProvider } from "@chakra-ui/react";
 import * as theme from "./theme";
 

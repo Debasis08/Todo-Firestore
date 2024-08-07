@@ -1,24 +1,30 @@
-import React from 'react';
+//TodoForm.jsx
+
 import { useForm, useFieldArray } from 'react-hook-form';
-import { Button, Input, VStack, HStack, Box, Center } from '@chakra-ui/react';
+import { Button, Input, VStack, HStack, Center } from '@chakra-ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addTask, updateTask } from '../../store/todoSlice';
 import { db } from '../../config';
 import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 
-const TodoForm = ({ task, onClose }) => {
+
+
+const TodoForm = ({ task }) => {
+
   const { register, control, handleSubmit, reset } = useForm({
     defaultValues: task || {
       taskName: '',
       status: false,
-      subtasks: [],
       subTitle: [],
+      subtasks: [],
     },
   });
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'subtasks',
   });
+
+  
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
 
@@ -42,6 +48,7 @@ const TodoForm = ({ task, onClose }) => {
       } else {
         // Add new task
         const newTask = {
+          updatedAt: new Date(),
           createdAt: new Date(),
           userId: user.uid,
           userName: user.displayName,
@@ -51,17 +58,18 @@ const TodoForm = ({ task, onClose }) => {
         dispatch(addTask({ id: docRef.id, ...newTask }));
       }
       reset();
-      onClose();
+      // onClose();
     } catch (error) {
       console.error('Error saving task:', error);
     }
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit(onSubmit)}>
       <Center>
       <VStack
-        border="1.7px solid"
+        border="1.7px dashed"
         height="fit-content"
         width="fit-content"
         paddingX="2rem"
@@ -69,6 +77,7 @@ const TodoForm = ({ task, onClose }) => {
         borderRadius="0.4rem"
         borderColor="#d675d6"
         marginBottom="5rem"
+        boxShadow="10px 10px 10px 0 rgba(0,0,0,1), 0 0 10px 10px rgba(214, 117, 214, 0.15)"
         spacing={4} >
 
         <Input {...register('taskName')}
@@ -90,7 +99,7 @@ const TodoForm = ({ task, onClose }) => {
         letterSpacing="0.75px"
         _focus={{ borderColor: 'transparent' }}
         placeholder="Subtitle" />
-        {/* <Input {...register('customField.numberValue')} type="number" placeholder="Numeric Digit" /> */}
+        
         
         {fields.map((field, index) => (
           <HStack key={field.id}>
@@ -127,22 +136,25 @@ const TodoForm = ({ task, onClose }) => {
         onClick={() => append({ name: '' })}>Add Subtask</Button>
         
         <Button
-        width="35vw"
-        maxWidth="20rem"
-        top="2.5rem"
-        height="fit-content"
-        padding="0.7rem 1rem"
-        fontSize="1rem"
-        color="#d675d6"
-        backgroundColor="#fdf3fd"
-        border="3px solid"
-        borderColor="#d675d6"
-        marginBottom="5rem"
-        _hover={{ backgroundColor: '#d675d6', color: '#fdf3fd' }}
-        type="submit">{task ? 'Update' : 'Add'} Task</Button>
+          width="35vw"
+          maxWidth="20rem"
+          top="2.5rem"
+          height="fit-content"
+          padding="0.7rem 1rem"
+          fontSize="1rem"
+          color="#d675d6"
+          backgroundColor="#fdf3fd"
+          border="3px solid"
+          borderColor="#d675d6"
+          marginBottom="5rem"
+          _hover={{ backgroundColor: '#d675d6', color: '#fdf3fd' }}
+          type="submit">{task ? 'Update' : 'Add'} Task
+        </Button>          
       </VStack>
       </Center>
+           
     </form>
+      </>
   );
 };
 

@@ -1,3 +1,5 @@
+//main.jsx
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Provider } from 'react-redux'
@@ -5,8 +7,9 @@ import { store } from './store/store'
 import App from './App'
 import './index.css'
 import { ThemeProvider } from './theme/ThemeProvider.jsx'
-import { createBrowserRouter, Route, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import TodoPage from './Pages/TodoPage.jsx'
+import AuthLayout from './store/AuthLayout.jsx'
 
 
 const router = createBrowserRouter([
@@ -16,8 +19,13 @@ const router = createBrowserRouter([
   },
   {
     path: "/vipani-Delat",
-    element: <TodoPage />
-  }
+    element: 
+    (
+      <AuthLayout authentication={true}>
+        <TodoPage />
+      </AuthLayout>
+  
+    )}
 ])
 
 ReactDOM.createRoot(document.getElementById('root')).render(

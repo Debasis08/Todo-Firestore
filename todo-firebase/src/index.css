@@ -2,3 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+
+.chartModal {
+    background-color: rgba(204, 171, 213, 0.19);
+    color: aliceblue;
+}

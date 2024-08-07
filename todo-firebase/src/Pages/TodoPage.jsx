@@ -1,3 +1,5 @@
+//TodoPage.jsx
+
 import { Button, Heading, Box, Center, ChakraProvider, useColorMode } from '@chakra-ui/react'
 import theme from '../theme/theme';
 import TodoForm from '../components/Todo/TodoForm';
@@ -5,9 +7,12 @@ import TodoList from '../components/Todo/TodoList';
 import { auth } from '../config';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import TasksChart from '../components/Todo/TasksChart';
+import { Modal, ModalOverlay, ModalContent, ModalCloseButton, ModalHeader, ModalBody, useDisclosure, } from '@chakra-ui/react';
 
 
 function TodoPage() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const navigate = useNavigate()
   const { toggleColorMode } = useColorMode()
@@ -67,8 +72,43 @@ function TodoPage() {
       size='sm' onClick={toggleColorMode}>
         Toggle Theme
       </Button>
-      
       </Center>
+
+      <Button
+          position="absolute"
+          top="425"
+          right="5"
+          width="fit-content"
+          height="fit-content"
+          padding="0.3rem 0.75rem"
+          color="#d675d6"
+          backgroundColor="#fdf3fd"
+          border="3px solid"
+          borderColor="#d675d6"
+          fontSize="1rem"
+          marginY="1rem"
+          _hover={{ backgroundColor: '#d675d6', color: '#fdf3fd' }}
+          onClick={onOpen}>
+          Tasks Chart
+        </Button>
+
+
+      <Modal isOpen={isOpen} onClose={onClose} size="5xl">
+        <ModalOverlay />
+        <ModalContent>
+
+          <ModalHeader>Tasks by Users</ModalHeader>
+          <ModalCloseButton backgroundColor="red" />
+
+          <ModalBody>
+          <Box>
+        <TasksChart />
+          </Box>
+          </ModalBody>
+
+        </ModalContent>
+      </Modal>
+
       
       <Box>
         <TodoForm task={editTask} onClose={() => setEditTask(null)} />
@@ -76,7 +116,6 @@ function TodoPage() {
       <Box>
         <TodoList onEditTask={handleEditTask} />
       </Box>
-    {/* </VStack> */}
   </ChakraProvider>
   )
 }
